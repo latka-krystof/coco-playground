@@ -423,6 +423,13 @@ export abstract class Vehicle extends THREE.Object3D implements IWorldEntity
 			}
 		});
 
+		// Update mass properties after all collision shapes are added
+		// This recalculates center of mass based on the shapes
+		if (this.collision.shapes.length > 0)
+		{
+			this.collision.updateMassProperties();
+		}
+
 		if (this.collision.shapes.length === 0)
 		{
 			console.warn('Vehicle ' + typeof(this) + ' has no collision data.');

@@ -4,6 +4,7 @@ import { World } from '../world/World';
 import { Helicopter } from '../vehicles/Helicopter';
 import { Airplane } from '../vehicles/Airplane';
 import { Car } from '../vehicles/Car';
+import { CocoVehicle } from '../vehicles/CocoVehicle';
 import * as Utils from '../core/FunctionLibrary';
 import { Vehicle } from '../vehicles/Vehicle';
 import { Character } from '../characters/Character';
@@ -28,6 +29,7 @@ export class VehicleSpawnPoint implements ISpawnPoint
 	{
 		loadingManager.loadGLTF('build/assets/' + this.type + '.glb', (model: any) =>
 		{
+			// Normal vehicle spawning (including COCO)
 			let vehicle: Vehicle = this.getNewVehicleByType(model, this.type);
 			vehicle.spawnPoint = this.object;
 
@@ -38,6 +40,7 @@ export class VehicleSpawnPoint implements ISpawnPoint
 
 			vehicle.setPosition(worldPos.x, worldPos.y + 1, worldPos.z);
 			vehicle.collision.quaternion.copy(Utils.cannonQuat(worldQuat));
+			
 			world.add(vehicle);
 
 			if (this.driver !== undefined)
@@ -93,6 +96,7 @@ export class VehicleSpawnPoint implements ISpawnPoint
 			case 'car': return new Car(model);
 			case 'heli': return new Helicopter(model);
 			case 'airplane': return new Airplane(model);
+			case 'coco': return new CocoVehicle(model);
 		}
 	}
 }

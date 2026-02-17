@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { ISpawnPoint } from '../interfaces/ISpawnPoint';
 import { VehicleSpawnPoint } from './VehicleSpawnPoint';
 import { CharacterSpawnPoint } from './CharacterSpawnPoint';
@@ -63,7 +64,7 @@ export class Scenario
 			{
 				if (child.userData.data === 'spawn')
 				{
-					if (child.userData.type === 'car' || child.userData.type === 'airplane' || child.userData.type === 'heli')
+					if (child.userData.type === 'car' || child.userData.type === 'airplane' || child.userData.type === 'heli' || child.userData.type === 'coco')
 					{
 						let sp = new VehicleSpawnPoint(child);
 
