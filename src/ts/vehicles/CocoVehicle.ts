@@ -145,39 +145,6 @@ export class CocoVehicle extends Vehicle implements IControllable
 		this.setSteeringValue(this.steeringSimulator.position);
 		if (this.steeringWheel !== undefined) this.steeringWheel.rotation.z = -this.steeringSimulator.position * 2;
 
-		// Upright stabilization when on ground - only when significantly tilted and slow/stationary
-		if (tiresHaveContact && Math.abs(this.collision.velocity.length()) < 2.0)
-		{
-			const quat = Utils.threeQuat(this.collision.quaternion);
-			const up = Utils.getUp(this);
-			const worldUp = new THREE.Vector3(0, 1, 0);
-			
-			// Calculate how much we're tilted
-			const tiltAmount = 1 - up.dot(worldUp);
-			
-			// Only correct if significantly tilted (increased threshold from 0.01 to 0.05)
-			if (tiltAmount > 0.05)
-			{
-				// Weaker correction when moving, stronger when stationary
-				const speedFactor = Math.max(0.2, 1.0 - Math.abs(this.collision.velocity.length()) * 0.3);
-				const correctionStrength = Math.min(tiltAmount * 3 * speedFactor, 1.0); // Reduced from 5 to 3, max from 2.0 to 1.0
-				const correctionAxis = new THREE.Vector3().crossVectors(up, worldUp);
-				
-				if (correctionAxis.length() > 0.001)
-				{
-					correctionAxis.normalize();
-					const correctionAngle = Math.acos(THREE.MathUtils.clamp(up.dot(worldUp), -1, 1));
-					
-					if (correctionAngle > 0.001)
-					{
-						// Reduced correction strength (from 10 to 5)
-						const correctionVec = Utils.cannonVector(correctionAxis.multiplyScalar(correctionAngle * correctionStrength * 5));
-						this.collision.angularVelocity.vadd(correctionVec, this.collision.angularVelocity);
-					}
-				}
-			}
-		}
-
 		if (this.rayCastVehicle.numWheelsOnGround < 3 && Math.abs(this.collision.velocity.length()) < 0.5)	
 		{	
 			this.collision.quaternion.copy(this.collision.initQuaternion);	
@@ -241,41 +208,6 @@ export class CocoVehicle extends Vehicle implements IControllable
 			}
 		}
 
-		// Active stabilization: reduce unwanted spinning when on ground
-		const tiresHaveContact = this.rayCastVehicle.numWheelsOnGround > 0;
-		if (tiresHaveContact)
-		{
-			// Only dampen unwanted rotation when not steering (less aggressive)
-			if (!this.actions.left.isPressed && !this.actions.right.isPressed)
-			{
-				angVel.x *= 0.85; // Less aggressive damping (was 0.7)
-				angVel.y *= 0.85;
-				angVel.z *= 0.85;
-			}
-			
-			// Only apply upright correction when significantly tilted and slow
-			const speed = this.collision.velocity.length();
-			if (speed < 1.5)
-			{
-				const up = Utils.getUp(this);
-				const worldUp = new THREE.Vector3(0, 1, 0);
-				const tiltAmount = 1 - up.dot(worldUp);
-				
-				// Only correct significant tilts (increased threshold)
-				if (tiltAmount > 0.05)
-				{
-					const correctionAxis = new THREE.Vector3().crossVectors(up, worldUp);
-					if (correctionAxis.length() > 0.001)
-					{
-						correctionAxis.normalize();
-						const correctionAngle = Math.acos(THREE.MathUtils.clamp(up.dot(worldUp), -1, 1));
-						// Reduced correction strength (from 8 to 4)
-						const correctionVec = Utils.cannonVector(correctionAxis.multiplyScalar(correctionAngle * tiltAmount * 4));
-						angVel.vadd(correctionVec, angVel);
-					}
-				}
-			}
-		}
 
 		// Steering
 		const velocity = new CANNON.Vec3().copy(this.collision.velocity);
